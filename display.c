@@ -1,20 +1,26 @@
 /*
 compile and run: gcc -std=c99 display.c -o display && ./display
 */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <time.h>
 
+#ifdef _WIN32
+#define CLEAR "cls"
+#else
+#define CLEAR "clear"
+#endif
+
 #define MAX_LINE_LENGTH 100
-#define DISPLAY_WIDTH 50
+#define DISPLAY_WIDTH 80
 #define RIGHT_SPACE 2
 
 int message_length;
 char *message;
 
-int text_length, text_height;
+int text_width, text_height;
 char **text;
 
 char *filename = "message.txt";
@@ -82,6 +88,7 @@ void load_font() {
 
 void create_text() {
   text_height = font_height;
+  text_width = 0;
   text = (char **) calloc(text_height, sizeof(char *));
   for (int x = 0; x < font_height; x++) {
     int width = 0;
@@ -89,12 +96,20 @@ void create_text() {
       width += strlen(font[message[i] - ' '][x]);
     }
     text[x] = (char *) calloc(width + 1, sizeof(char));
+    text_width = max(text_width, width);
     for (int i = 0; i < message_length; i++) {
       strcat(text[x], font[message[i] - ' '][x]);
     }
   }
 }
 
+void frame() {
+  printf("+");
+  for (int i = 0; i < DISPLAY_WIDTH; i++) {
+    printf("-");
+  }
+  printf("+\n");
+}
 int main(void) {
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
@@ -115,32 +130,46 @@ int main(void) {
 
   create_text();
 
-  for (int i = 0; i < text_height; i++)
-    puts(text[i]);
-  // while(1) {
-  //   for (int x = DISPLAY_WIDTH - 1; x >= -length; x--) {
-  //     for (int i = 0; i < x; i++) {
-  //       printf(" ");
-  //     }
-  //     for (int i = -fmin(0, x); x + i < DISPLAY_WIDTH && i <= length; i++) {
-  //       printf("%c", message[i]);
-  //     }
-  //     for (int i = 0; x + i <= DISPLAY_WIDTH; i++) {
-  //       printf(" ");
-  //     }
+  system(CLEAR);
+  while(1) {
+    for (int x = DISPLAY_WIDTH; x > -text_width; x--) {
 
-  //     clock_t start = clock(), end;
-  //     while(1) {
-  //       end = clock() - start;
-  //       float t = (float) end/CLOCKS_PER_SEC;
-  //       if (fabs(t - 0.16) < 1e-5)
-  //         break;
-  //     }
+      frame();
 
-  //     printf("\r");
-  //     fflush(stdout);
-  //   }
-  // }
+      for (int k = 0; k < text_height; k++) {
+        int length = strlen(text[k]);
+        int caret = 0;
+        printf("|");
+        for (int i = 0; i < x; i++) {
+          printf(" ");
+          caret++;
+        }
+
+        for (int i = -fmin(0, x); caret < DISPLAY_WIDTH && i < length; i++) {
+          printf("%c", text[k][i]);
+          caret++;
+        }
+        for (; caret < DISPLAY_WIDTH; caret++) {
+          printf(" ");
+        }
+
+        printf("|\n");
+      }
+
+      frame();
+
+      clock_t start = clock(), end;
+      while(1) {
+        end = clock() - start;
+        float t = (float) end/CLOCKS_PER_SEC;
+        if (fabs(t - 0.06) < 1e-5) {
+          break;
+        }
+      }
+
+      system(CLEAR);
+    }
+  }
 
   return EXIT_SUCCESS;
 }
