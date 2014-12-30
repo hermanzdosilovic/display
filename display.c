@@ -16,7 +16,7 @@ const char separator = '/';
 #endif
 
 #define MAX_LINE_LENGTH 100
-#define DISPLAY_WIDTH 80
+#define DISPLAY_WIDTH 78
 #define RIGHT_SPACE 2
 
 int message_length;
