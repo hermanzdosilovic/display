@@ -1,5 +1,5 @@
 /*
-compile and run: gcc -std=c99 display.c -o display && ./display
+compile and run: gcc -std=c99 display.c -o display -lm && ./display
 */
 #include <math.h>
 #include <stdio.h>
@@ -9,8 +9,10 @@ compile and run: gcc -std=c99 display.c -o display && ./display
 
 #ifdef _WIN32
 #define CLEAR "cls"
+const char separator = '\\';
 #else
 #define CLEAR "clear"
+const char separator = '/';
 #endif
 
 #define MAX_LINE_LENGTH 100
@@ -25,7 +27,8 @@ char **text;
 
 char *filename = "message.txt";
 
-char *fontname = "fonts/colossal";
+char *fontfolder = "fonts";
+char *fontname = "colossal";
 const int font_height = 11;
 char ***font;
 
@@ -36,9 +39,13 @@ int max(int x, int y) {
 }
 
 void load_font() {
-  FILE *file = fopen(fontname, "r");
+  int length = strlen(fontfolder) + strlen(fontname) + 2;
+  char *fontpath = (char *) calloc(length, sizeof(char));
+  sprintf(fontpath, "fonts%c%s", separator, fontname);
+
+  FILE *file = fopen(fontpath, "r");
   if (file == NULL) {
-    fprintf(stderr, "Could not open file %s\n", fontname);
+    fprintf(stderr, "Could not open file %s\n", fontpath);
     exit(EXIT_FAILURE);
   }
 
@@ -162,7 +169,7 @@ int main(void) {
       while(1) {
         end = clock() - start;
         float t = (float) end/CLOCKS_PER_SEC;
-        if (fabs(t - 0.06) < 1e-5) {
+        if (fabs(t - 0.06) < 1e-2) {
           break;
         }
       }
