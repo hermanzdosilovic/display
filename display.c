@@ -9,6 +9,7 @@ compile and run: gcc -std=c99 display.c -o display && ./display
 
 #define MAX_LINE_LENGTH 100
 #define DISPLAY_WIDTH 50
+#define RIGHT_SPACE 2
 
 int message_length;
 char *message;
@@ -28,62 +29,49 @@ int max(int x, int y) {
   return x > y ? x : y;
 }
 
-int calc_max_length() {
-  FILE *file = fopen(fontname, "r");
-  if (file == NULL) {
-    fprintf(stderr, "Could not open file %s\n", fontname);
-    exit(EXIT_FAILURE);
-  }
-
-  char *buffer = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
-  int max_length = 0;
-  while(fgets(buffer, MAX_LINE_LENGTH + 1, file) != NULL) {
-    int length = strlen(buffer);
-    if (buffer[length - 1] == '\n') {
-      buffer[length - 1] = '\0';
-      length--;
-    }
-    max_length = max(max_length, length);
-  }
-
-  free(buffer);
-  fclose(file);
-
-  return max_length;
-}
-
 void load_font() {
-  int max_length = calc_max_length();
-
   FILE *file = fopen(fontname, "r");
   if (file == NULL) {
     fprintf(stderr, "Could not open file %s\n", fontname);
     exit(EXIT_FAILURE);
   }
 
-  char *buffer = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
+  char **buffer = (char **) calloc(font_height, sizeof(char *));
+  for (int i = 0; i < font_height; i++) {
+    buffer[i] = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
+  }
 
+  int max_width = 0;
   font = (char ***) calloc(chars, sizeof(char **));
   for (int i = 1; i < chars; i++) {
     font[i] = (char **) calloc(font_height, sizeof(char *));
+    int char_width = 0;
     for (int x = 0; x < font_height; x++) {
-      fgets(buffer, MAX_LINE_LENGTH + 1, file);
-      int length = strlen(buffer);
-      if (buffer[length - 1] == '\n') {
-        buffer[length - 1] = '\0';
+      fgets(buffer[x], MAX_LINE_LENGTH + 1, file);
+      int length = strlen(buffer[x]);
+      if (buffer[x][length - 1] == '\n') {
+        buffer[x][length - 1] = '\0';
+        length--;
       }
-      font[i][x] = (char *) calloc(max_length + 1, sizeof(char));
-      strcat(font[i][x], buffer);
-      for (int k = strlen(font[i][x]); k < max_length; k++) {
+      char_width = max(char_width, length);
+      max_width = max(max_width, length);
+
+    }
+    char_width += RIGHT_SPACE;
+    for (int x = 0; x < font_height; x++) {
+      font[i][x] = (char *) calloc(char_width + 1, sizeof(char));
+      strcat(font[i][x], buffer[x]);
+      for (int k = strlen(font[i][x]); k < char_width; k++) {
         font[i][x][k] = ' ';
       }
     }
   }
 
+  int space_width = max_width/2 + RIGHT_SPACE;
   font[0] = (char **) calloc(font_height, sizeof(char *));
   for (int x = 0; x < font_height; x++) {
-    font[0][x] = (char *) calloc(max_length + 1, sizeof(char));
-    for (int i = 0; i < max_length; i++) {
+    font[0][x] = (char *) calloc(space_width + 1, sizeof(char));
+    for (int i = 0; i < space_width; i++) {
       font[0][x][i] = ' ';
     }
   }
