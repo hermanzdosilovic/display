@@ -25,11 +25,11 @@ char *message;
 int text_width, text_height;
 char **text;
 
-char *filename = "message.txt";
+char *filename = "settings.txt";
 
 char *fontfolder = "fonts";
-char *fontname = "colossal";
-const int font_height = 11;
+char *fontname;
+int font_height;
 char ***font;
 
 const int chars = '~' - ' ' + 1; // number of characters that font has
@@ -49,10 +49,15 @@ void load_font() {
     exit(EXIT_FAILURE);
   }
 
+  char *height = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
+  fgets(height, MAX_LINE_LENGTH + 1, file);
+  font_height = atoi(height);
+
   char **buffer = (char **) calloc(font_height, sizeof(char *));
   for (int i = 0; i < font_height; i++) {
     buffer[i] = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
   }
+
 
   int max_width = 0;
   font = (char ***) calloc(chars, sizeof(char **));
@@ -89,7 +94,12 @@ void load_font() {
     }
   }
 
+  for (int i = 0; i < font_height; i++) {
+    free(buffer[i]);
+  }
   free(buffer);
+  free(height);
+  free(fontpath);
   fclose(file);
 }
 
@@ -117,6 +127,7 @@ void frame() {
   }
   printf("+\n");
 }
+
 int main(void) {
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
@@ -124,18 +135,35 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
-  load_font();
-
   message = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
   fgets(message, MAX_LINE_LENGTH + 1, file);
-
   message_length = strlen(message);
   if (message[message_length - 1] == '\n') {
     message[message_length - 1] = '\0';
     message_length--;
   }
 
+  fontname = (char *) calloc(MAX_LINE_LENGTH + 1, sizeof(char));
+  fgets(fontname, MAX_LINE_LENGTH + 1, file);
+  int fontname_length = strlen(fontname);
+  if (fontname[fontname_length - 1] == '\n') {
+    fontname[fontname_length - 1] = '\0';
+  }
+
+  fclose(file);
+
+  load_font();
   create_text();
+
+  free(fontname);
+  free(message);
+  for (int i = 0; i < chars; i++) {
+    for (int j = 0; j < font_height; j++) {
+      free(font[i][j]);
+    }
+    free(font[i]);
+  }
+  free(font);
 
   system(CLEAR);
   while(1) {

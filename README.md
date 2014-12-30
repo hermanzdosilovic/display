@@ -8,7 +8,8 @@ ASCII display. All-nighter, one night stand, goodbye 2014 "project".
 How to use it?
 --------------
 
-1. In _message.txt_ file enter your one line message. There is "__hello, world\n__" by default.
+1. In the first line of _settings.txt_ file enter your message (max. 100 characters). There is "__hello, world\n__" by default.
+2. In the second line of _settings.txt_ enter name of font you want to use (see [fonts](https://github.com/hermanzdosilovic/display/tree/master/fonts)). There is "__colossal__" by default.
 
 2. Compile:
 
@@ -24,6 +25,10 @@ How to use it?
 		
 
 Use `CTRL + C` to stop the program.
+
+Settings
+--------
+Once you compiled _display_ for your machine just use _settings.txt_ file to set settings that you want. And then just run _display_ again.
 
 Tested on
 ---------
