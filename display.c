@@ -120,6 +120,24 @@ void create_text() {
   }
 }
 
+
+void random_color() {
+#ifdef _WIN32
+  printf("");
+#else
+  int number = rand()%256 + 1;
+  printf("\033[38;5;%dm", number);
+#endif
+}
+
+void default_color() {
+#ifdef _WIN32
+  printf("");
+#else
+  printf("\033[38;5;256m");
+#endif
+}
+
 void frame() {
   printf("+");
   for (int i = 0; i < DISPLAY_WIDTH; i++) {
@@ -129,6 +147,7 @@ void frame() {
 }
 
 int main(void) {
+  srand(time(NULL));
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
     fprintf(stderr, "Could not open file %s\n", filename);
@@ -168,18 +187,16 @@ int main(void) {
   system(CLEAR);
   while(1) {
     for (int x = DISPLAY_WIDTH; x > -text_width; x--) {
-
       frame();
-
       for (int k = 0; k < text_height; k++) {
         int length = strlen(text[k]);
         int caret = 0;
         printf("|");
+        random_color();
         for (int i = 0; i < x; i++) {
           printf(" ");
           caret++;
         }
-
         for (int i = -fmin(0, x); caret < DISPLAY_WIDTH && i < length; i++) {
           printf("%c", text[k][i]);
           caret++;
@@ -187,10 +204,9 @@ int main(void) {
         for (; caret < DISPLAY_WIDTH; caret++) {
           printf(" ");
         }
-
+        default_color();
         printf("|\n");
       }
-
       frame();
 
       clock_t start = clock(), end;
@@ -201,7 +217,6 @@ int main(void) {
           break;
         }
       }
-
       system(CLEAR);
     }
   }
